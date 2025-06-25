@@ -1,0 +1,20 @@
+/*Andrew assisted showing how UNION subqueries are useful compared to unioning two tables overall*/
+
+SELECT b.title,b.author,i.itemcallnumber,i.datelastborrowed,i.withdrawn_on,i.deleted_on
+FROM
+
+(SELECT * FROM items WHERE items.withdrawn_on IS NOT NULL
+UNION ALL
+SELECT * FROM deleteditems WHERE deleteditems.deleted_on IS NOT NULL) i
+
+LEFT JOIN
+
+(SELECT * FROM biblio
+UNION ALL
+SELECT * FROM deletedbiblio) b USING (biblionumber)
+
+LEFT JOIN
+
+(SELECT * FROM biblioitems
+UNION ALL
+SELECT * FROM deletedbiblioitems) bi USING (biblionumber)
