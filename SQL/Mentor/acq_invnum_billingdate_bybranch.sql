@@ -1,0 +1,14 @@
+---SaraP helped identify that capturing all data and then narrowing down helps to see what information is needed and that the joins are working as expected
+
+SELECT b.title, aqoi.itemnumber AS 'itemnumber from acq', i.itemnumber AS 'itemnumber from items', i.homebranch, i.barcode AS "Barcode",ROUND(aqo.unitprice,2)AS "Price",aqi.billingdate "Billing Date",aqi.invoicenumber "Invoice Number"
+FROM aqinvoices aqi
+LEFT JOIN aqorders aqo ON aqi.invoiceid = aqo.invoiceid
+LEFT JOIN aqorders_items aqoi ON aqo.ordernumber = aqoi.ordernumber
+LEFT JOIN biblio b ON aqo.biblionumber = b.biblionumber
+LEFT JOIN biblioitems bi ON bi.biblionumber = b.biblionumber
+LEFT JOIN items i ON i.biblioitemnumber = bi.biblioitemnumber
+WHERE 
+i.homebranch = <<Library|branches>>
+AND aqi.billingdate BETWEEN <<Start Date|date>> AND <<End Date|date>>
+
+ORDER BY aqi.billingdate DESC
