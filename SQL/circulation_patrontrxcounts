@@ -1,0 +1,22 @@
+SELECT
+  CASE 
+    WHEN p.branchcode = 'erau' THEN 'ERAU'
+      ELSE 'YLN'
+  END AS "Patron",
+  SUM(CASE WHEN s.type = 'issue' THEN 1 ELSE 0 END) AS "Checkouts",
+  SUM(CASE WHEN s.type = 'renew' THEN 1 ELSE 0 END) AS "Renewals"
+FROM statistics s
+LEFT JOIN borrowers p ON s.borrowernumber = p.borrowernumber
+LEFT JOIN items i ON (s.itemnumber = i.itemnumber)
+WHERE s.type IN ('issue', 'renew')
+AND i.homebranch = 'erau'
+AND DATE(s.datetime) BETWEEN <<Start Date|date>> AND <<End Date|date>>
+GROUP BY CASE 
+  WHEN p.branchcode = 'erau' THEN 'ERAU'
+    ELSE 'YLN'
+      END
+ORDER BY 
+    CASE 
+        WHEN p.branchcode = 'erau' THEN 1
+        ELSE 2 
+    END
