@@ -1,0 +1,13 @@
+SELECT b.biblionumber, b.title, b.author, b.copyrightdate,
+  CONCAT(
+    EXTRACTVALUE(bm.metadata, '//datafield[@tag="092"]/subfield[@code="a"]'), ' ',
+    EXTRACTVALUE(bm.metadata, '//datafield[@tag="092"]/subfield[@code="b"]')
+  ) AS bib_call_num
+  
+FROM biblio b
+LEFT JOIN items i USING (biblionumber) 
+LEFT JOIN biblio_metadata bm USING (biblionumber)
+
+WHERE i.itemnumber IS NULL
+
+GROUP BY b.biblionumber
