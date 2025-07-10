@@ -1,0 +1,19 @@
+SELECT
+  SUBSTRING_INDEX(b.zipcode, '-', 1) AS "Zip Code",
+  COUNT(CASE WHEN s.type = 'issue' THEN 1 END) AS "Checkouts",
+  COUNT(CASE WHEN s.type = 'renew' THEN 1 END) AS "Renewals",
+  COUNT(CASE WHEN s.type IN ('issue', 'renew') THEN 1 END) AS "Total Circ"
+  
+FROM statistics s
+LEFT JOIN borrowers b ON b.borrowernumber = s.borrowernumber
+
+WHERE
+  s.type IN ('issue', 'renew')
+  AND DATE(s.datetime) BETWEEN <<Has activity BETWEEN (YYYY-MM-dd)|date>> AND <<and|date>>
+  AND b.branchcode = <<branchcode|branches>>
+  
+GROUP BY
+  SUBSTRING_INDEX(b.zipcode, '-', 1)
+  
+ORDER BY
+  b.zipcode
