@@ -1,0 +1,27 @@
+SELECT
+  CASE
+    WHEN TIMESTAMPDIFF(YEAR, dateofbirth, CURDATE()) < 6 THEN '0 to 5'
+    WHEN TIMESTAMPDIFF(YEAR, dateofbirth, CURDATE()) BETWEEN 6 AND 12 THEN '6 to 12'
+    WHEN TIMESTAMPDIFF(YEAR, dateofbirth, CURDATE()) BETWEEN 13 AND 18 THEN '13 to 18'
+    WHEN TIMESTAMPDIFF(YEAR, dateofbirth, CURDATE()) BETWEEN 19 AND 25 THEN '19 to 25'
+    WHEN TIMESTAMPDIFF(YEAR, dateofbirth, CURDATE()) BETWEEN 26 AND 45 THEN '26 to 45'
+    WHEN TIMESTAMPDIFF(YEAR, dateofbirth, CURDATE()) BETWEEN 46 AND 69 THEN '46 to 69'
+    WHEN TIMESTAMPDIFF(YEAR, dateofbirth, CURDATE()) >= 70 THEN '70+'
+      ELSE 'Not Filled In (NULL)'
+  END AS age_range,
+  FORMAT(SUM(IF(s.type = 'issue', 1, 0)), 0) AS "Checkouts",
+  FORMAT(SUM(IF(s.type = 'renew', 1, 0)), 0) AS "Renewals",
+  FORMAT(SUM(IF(s.type IN ('issue', 'renew'), 1, 0)), 0) AS "Total Circ"
+
+FROM borrowers b
+LEFT JOIN statistics s ON b.borrowernumber = s.borrowernumber
+
+WHERE
+  DATE(s.datetime) BETWEEN <<Has activity BETWEEN (YYYY-MM-dd)|date>> AND <<and|date>>
+  AND b.branchcode = <<branchcode|branches>>
+  
+GROUP BY
+  age_range
+  
+ORDER BY
+  age_range
