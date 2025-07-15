@@ -1,1 +1,7 @@
-
+SELECT *
+FROM action_logs
+WHERE module = 'MEMBERS'
+  AND action LIKE 'CRE%'
+  AND info IS NOT NULL
+  AND interface <> 'commandline'
+LIMIT 100
