@@ -1,0 +1,15 @@
+SELECT 
+  CASE 
+    WHEN lang_form = '0' THEN 'Nonfiction'
+    WHEN lang_form = '1' THEN 'Fiction'
+    ELSE 'Other'
+  END AS LiteraryForm,
+  COUNT(*) AS BIBS
+FROM (
+  SELECT 
+    Substring(ExtractValue(metadata,'//controlfield[@tag=008]'),34,1) AS lang_form,
+    biblionumber
+  FROM biblio_metadata
+) AS subquery
+
+GROUP BY LiteraryForm
