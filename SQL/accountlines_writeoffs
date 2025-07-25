@@ -1,0 +1,10 @@
+SELECT al.accountlines_id, al.date, p.cardnumber, i.barcode, ROUND(al.amount,2), al.credit_type_code, al.timestamp, al.note, al.manager_id, al.register_id, al.interface, al.branchcode
+
+FROM accountlines al
+
+LEFT JOIN items i ON al.itemnumber = i.itemnumber
+LEFT JOIN borrowers p ON al.borrowernumber = p.borrowernumber
+
+WHERE CREDIT_TYPE_CODE ='WRITEOFF' 
+  AND al.timestamp BETWEEN  <<Start Date |date>> AND <<End Date |date>>
+  AND p.branchcode =<<Pick your branch|branches>> 
