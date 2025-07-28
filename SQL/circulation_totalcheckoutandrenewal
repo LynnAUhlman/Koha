@@ -1,0 +1,8 @@
+SELECT 
+  SUM(CASE WHEN s.type = 'issue' THEN 1 ELSE 0 END) AS TotalCheckouts,
+  SUM(CASE WHEN s.type = 'renew' THEN 1 ELSE 0 END) AS TotalRenewals
+FROM statistics s
+LEFT JOIN borrowers p ON s.borrowernumber = p.borrowernumber
+WHERE 
+  DATE(s.datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
+  AND s.type IN ('issue', 'renew')
