@@ -1,0 +1,12 @@
+SELECT 
+  itemtype,
+  SUM(CASE WHEN type = 'issue' THEN 1 ELSE 0 END) AS Checkouts,
+  SUM(CASE WHEN type = 'renew' THEN 1 ELSE 0 END) AS Renewals
+FROM statistics
+WHERE 
+  DATE(datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
+  AND ccode LIKE <<Authorized value|CCODE:all>>
+  AND type IN ('issue', 'renew')
+  AND branch LIKE <<Transaction branch|branches:all>>
+GROUP BY itemtype
+ORDER BY itemtype
