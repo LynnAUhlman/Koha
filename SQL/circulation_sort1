@@ -9,5 +9,4 @@ WHERE
   DATE(s.datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
   AND s.type IN ('issue', 'renew')
   
-GROUP BY p.sort1
-ORDER BY p.sort1
+GROUP BY p.sort1 with rollup
