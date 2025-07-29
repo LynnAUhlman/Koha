@@ -1,0 +1,14 @@
+--Kelly McElligot
+
+ SELECT
+    CONCAT_WS(" ",firstname, surname, CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=',borrowernumber,'">',cardnumber,'</a>')) AS patron,
+    CONCAT('<a href="/cgi-bin/koha/catalogue/moredetail.pl?type=&itemnumber=',itemnumber,'&biblionumber=',items.biblionumber,'#item',itemnumber,'">',barcode,'</a>') AS item,
+    itemnumber,
+    reservedate,
+    expirationdate,
+    itemlost,
+    itemlost_on
+FROM reserves
+JOIN borrowers USING (borrowernumber)
+JOIN items USING (itemnumber) 
+WHERE itemlost != 0
