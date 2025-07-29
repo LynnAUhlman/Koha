@@ -1,0 +1,6 @@
+SELECT itemnumber, homebranch, holdingbranch, itype 
+FROM items
+WHERE homebranch IS NULL
+OR holdingbranch IS NULL 
+OR itype IS NULL 
+OR itype NOT IN (SELECT itype FROM itemtypes)
