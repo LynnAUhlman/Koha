@@ -1,3 +1,5 @@
+---Enica
+
 SELECT itemnumber, homebranch, holdingbranch, itype 
 FROM items
 WHERE homebranch IS NULL
