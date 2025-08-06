@@ -1,0 +1,66 @@
+SELECT
+  a.date AS 'transactiondate',
+  b.categorycode,
+  a.payment_type, 
+  CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', man.borrowernumber, '">', man.firstname, ' ', man.surname, '</a>') AS 'manager',
+  CONCAT('<a href="/cgi-bin/koha/members/pay.pl?borrowernumber=', b.borrowernumber, '">', b.firstname, ' ', b.surname, '</a>') AS 'patron',
+  br.branchname AS 'transactionbranch',
+  
+  GROUP_CONCAT(
+    CONCAT_WS(
+      '<br>',
+      CONCAT_WS(' - ', FORMAT(ABS(ao.amount), 2), IFNULL(ad.debit_type_code, '')),
+      IFNULL(bib.title, ad.description),
+      IFNULL(i.barcode, '')
+    )
+    SEPARATOR '<br><br>'
+  ) AS 'Individual Fee & Item Details',
+
+  ROUND(SUM(ABS(ao.amount)), 2) AS Total,
+
+  -- 🆕 Total outstanding balance per patron
+  (
+    SELECT 
+      ROUND(SUM(al2.amountoutstanding), 2)
+    FROM accountlines al2
+    WHERE al2.borrowernumber = a.borrowernumber
+      AND al2.amountoutstanding > 0
+  ) AS 'Outstanding Account Balance'
+
+FROM account_offsets ao
+LEFT JOIN accountlines a ON a.accountlines_id = ao.credit_id
+LEFT JOIN accountlines ad ON ad.accountlines_id = ao.debit_id
+LEFT JOIN borrowers man ON man.borrowernumber = a.manager_id
+LEFT JOIN borrowers b ON b.borrowernumber = a.borrowernumber
+LEFT JOIN branches br ON a.branchcode = br.branchcode
+LEFT JOIN items i ON ad.itemnumber = i.itemnumber
+LEFT JOIN biblio bib ON i.biblionumber = bib.biblionumber
+LEFT JOIN authorised_values v ON a.payment_type = v.authorised_value AND v.category = 'payment_type'
+
+WHERE 
+  a.branchcode LIKE <<Select a branch|branches:all>> 
+  AND DATE(a.date) BETWEEN <<Dates between|date>> AND <<and|date>>
+  AND ao.type = 'APPLY' 
+  AND a.credit_type_code = 'PAYMENT' 
+  AND ao.debit_id IS NOT NULL 
+  AND a.status IS NULL
+
+GROUP BY a.accountlines_id
+
+UNION ALL
+
+SELECT
+  '', '', '', '', '', '', '', 
+  ROUND(SUM(ABS(ao.amount)), 2) AS Total,
+  ''  -- placeholder for Outstanding Balance in summary row
+
+FROM account_offsets ao
+LEFT JOIN accountlines a ON a.accountlines_id = ao.credit_id
+
+WHERE 
+  a.branchcode LIKE <<Select a branch|branches:all>> 
+  AND DATE(a.date) BETWEEN <<Dates between|date>> AND <<and|date>>
+  AND ao.type = 'APPLY' 
+  AND a.credit_type_code = 'PAYMENT' 
+  AND ao.debit_id IS NOT NULL 
+  AND a.status IS NULL
