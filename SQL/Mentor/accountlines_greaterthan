@@ -1,0 +1,6 @@
+SELECT cardnumber, surname, firstname, biblio.title, barcode, description, amountoutstanding
+FROM accountlines 
+JOIN items ON (accountlines.itemnumber=items.itemnumber) 
+INNER JOIN biblio ON (items.biblionumber=biblio.biblionumber) 
+JOIN borrowers ON (accountlines.borrowernumber=borrowers.borrowernumber) 
+WHERE amountoutstanding > 50
