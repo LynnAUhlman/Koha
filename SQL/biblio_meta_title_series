@@ -1,0 +1,29 @@
+---amalgamated from koha sql wiki and a brain child
+
+SELECT DISTINCT
+       b.biblionumber,
+       b.title,
+       b.author,
+       m.isbn,
+       ExtractValue(
+         bm.metadata,
+         '//datafield[@tag="490" or @tag="440"]/subfield/text()'
+       ) AS `Series Data`
+
+FROM biblio b
+JOIN biblio_metadata bm
+  ON bm.biblionumber = b.biblionumber
+ AND bm.format = 'marcxml'
+LEFT JOIN biblioitems m ON b.biblionumber = m.biblionumber
+JOIN deleteditems i
+  ON i.biblionumber = b.biblionumber
+ AND i.homebranch =  <<Library|branches>> 
+ AND DATE(i.timestamp) BETWEEN <<Deleted between|date>> AND <<and|date>>
+
+WHERE NOT EXISTS (
+        SELECT 1
+        FROM items it
+        WHERE it.biblionumber = b.biblionumber
+      )
+      
+ORDER BY b.title
