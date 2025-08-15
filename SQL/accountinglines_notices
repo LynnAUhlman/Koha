@@ -1,0 +1,39 @@
+SELECT
+  p.cardnumber,
+  p.surname,
+  p.firstname,
+  bib.title,
+  bib.author,
+  i.replacementprice,
+  ROUND(COALESCE(pf.processing_fee_outstanding, 0), 2) AS processing_fee_outstanding
+
+FROM accountlines AS al
+JOIN (
+  SELECT al2.borrowernumber, SUM(al2.amountoutstanding) AS total_outstanding
+  FROM accountlines AS al2
+  WHERE al2.amountoutstanding > 0
+  GROUP BY al2.borrowernumber
+  HAVING SUM(al2.amountoutstanding) >= 50
+) AS tot
+  ON tot.borrowernumber = al.borrowernumber
+LEFT JOIN (
+  SELECT
+    borrowernumber,
+    itemnumber,
+    SUM(amountoutstanding) AS processing_fee_outstanding
+  FROM accountlines
+  WHERE amountoutstanding > 0
+    AND debit_type_code = 'PROCESSING'
+  GROUP BY borrowernumber, itemnumber
+) AS pf
+  ON pf.borrowernumber = al.borrowernumber
+ AND pf.itemnumber = al.itemnumber
+LEFT JOIN borrowers p ON p.borrowernumber = al.borrowernumber
+LEFT JOIN branches br  ON br.branchcode = al.branchcode
+LEFT JOIN items i ON i.itemnumber = al.itemnumber
+LEFT JOIN biblio bib ON bib.biblionumber = i.biblionumber
+WHERE al.amountoutstanding > 0
+  AND al.debit_type_code = 'LOST'
+  AND (al.status IS NULL OR al.status <> 'VOID')
+  AND al.itemnumber IS NOT NULL
+ORDER BY p.surname, p.firstname, al.date, al.accountlines_id
