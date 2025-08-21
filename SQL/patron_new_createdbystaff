@@ -1,0 +1,35 @@
+SELECT
+  CONCAT_WS(' - ', p.categorycode, c.description) AS Category, 
+  p.borrowernumber,
+  p.surname,
+  p.firstname,
+  p.cardnumber,
+  p.dateenrolled,
+  p.branchcode,
+  COALESCE(bc.cardnumber) AS "Staff Card #",
+  CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', ac.user, '">', ac.user, '</a>') AS staff
+  
+FROM borrowers p
+JOIN categories c 
+  ON c.categorycode = p.categorycode
+INNER JOIN (
+  SELECT object, user, MIN(timestamp) AS timestamp, MAX(info) AS info
+  FROM action_logs
+  WHERE module = 'MEMBERS'
+    AND action LIKE 'CRE%'
+    AND interface = 'intranet'
+    AND user IS NOT NULL
+  GROUP BY object, user
+) ac 
+  ON ac.object = p.borrowernumber
+  
+/* who created */
+LEFT JOIN borrowers bc ON bc.borrowernumber = ac.user
+
+WHERE 
+  /* patron created */
+  p.dateenrolled BETWEEN <<Enrolled between|date>> AND <<and|date>>
+
+ORDER BY 
+  p.categorycode ASC,
+  p.dateenrolled ASC
