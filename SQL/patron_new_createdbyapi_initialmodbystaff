@@ -1,0 +1,68 @@
+SELECT
+  CONCAT_WS(' - ', p.categorycode, c.description) AS Category,
+  p.borrowernumber,
+  p.cardnumber,
+  p.surname,
+  p.firstname,
+  p.dateenrolled,
+  p.branchcode,
+  ad.timestamp AS modified,
+  ad.interface,
+  ad.info,
+  bd.cardnumber AS "Staff Card #",
+  CONCAT(COALESCE(bd.firstname, ''), ' ', COALESCE(bd.surname, '')) AS "Modified by Staff"
+FROM borrowers p
+LEFT JOIN (
+  SELECT al.object, MIN(al.timestamp) AS timestamp
+  FROM action_logs al
+  WHERE al.module = 'MEMBERS'
+    AND al.action LIKE 'CRE%'
+    AND al.action NOT LIKE '%RESTRICTION%'
+    AND al.interface = 'api'
+  GROUP BY al.object
+) ac ON ac.object = p.borrowernumber
+LEFT JOIN (
+  SELECT fm.object, MIN(fm.timestamp) AS first_mod_ts
+  FROM action_logs fm
+  JOIN (
+    SELECT al.object, MIN(al.timestamp) AS min_create_ts
+    FROM action_logs al
+    WHERE al.module = 'MEMBERS'
+      AND al.action LIKE 'CRE%'
+      AND al.action NOT LIKE '%RESTRICTION%'
+      AND al.interface = 'api'
+    GROUP BY al.object
+  ) cre ON cre.object = fm.object
+  WHERE fm.module = 'MEMBERS'
+    AND fm.action = 'MODIFY'
+    AND fm.interface = 'intranet'
+    AND fm.user IS NOT NULL
+    AND fm.timestamp > cre.min_create_ts
+  GROUP BY fm.object
+) al1 ON al1.object = p.borrowernumber
+LEFT JOIN action_logs ad
+  ON ad.object = p.borrowernumber
+ AND ad.timestamp = al1.first_mod_ts
+ AND ad.module = 'MEMBERS'
+ AND ad.action = 'MODIFY'
+ AND ad.interface = 'intranet'
+ AND ad.user IS NOT NULL
+LEFT JOIN borrowers bc
+  ON bc.borrowernumber = (SELECT al.user
+                          FROM action_logs al
+                          WHERE al.object = p.borrowernumber
+                            AND al.module = 'MEMBERS'
+                            AND al.action LIKE 'CRE%'
+                            AND al.action NOT LIKE '%RESTRICTION%'
+                            AND al.interface = 'api'
+                          ORDER BY al.timestamp ASC
+                          LIMIT 1)
+LEFT JOIN borrowers bd
+  ON bd.borrowernumber = ad.user
+LEFT JOIN categories c
+  ON c.categorycode = p.categorycode
+WHERE ad.timestamp IS NOT NULL
+  AND ac.timestamp IS NOT NULL
+  AND p.categorycode <> 'SELF'
+  AND DATE(p.dateenrolled) BETWEEN <<Date enrolled between|date>> AND <<and|date>>
+ORDER BY p.categorycode, p.surname, ad.timestamp DESC
