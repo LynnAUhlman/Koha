@@ -1,0 +1,13 @@
+SELECT 
+  i.homebranch,
+  SUM(CASE WHEN s.type = 'issue' THEN 1 ELSE 0 END) AS Checkouts,
+  SUM(CASE WHEN s.type = 'renew' THEN 1 ELSE 0 END) AS Renewals
+
+FROM statistics s
+LEFT JOIN items i ON s.itemnumber = i.itemnumber
+
+WHERE 
+  DATE(datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
+  AND s.type IN ('issue', 'renew')
+
+GROUP BY i.homebranch
