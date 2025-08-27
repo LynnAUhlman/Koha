@@ -1,0 +1,17 @@
+SELECT
+  i.itemnumber,
+  b.biblionumber,
+  b.title,
+  ExtractValue(bm.metadata,'//datafield[@tag="245"]/subfield[@code="h"]') AS gmd_245h,
+  i.barcode,
+  i.homebranch,
+  i.holdingbranch,
+  i.location,
+  i.ccode,
+  i.itemcallnumber
+FROM biblio b
+JOIN biblio_metadata bm USING (biblionumber)
+JOIN items i USING (biblionumber)
+WHERE bm.format = 'marcxml'
+  AND LOWER(ExtractValue(bm.metadata,'//datafield[@tag="245"]/subfield[@code="h"]'))
+      LIKE CONCAT('%', LOWER(<<GMD text (e.g., Paperback)>>), '%')
