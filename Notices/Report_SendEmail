@@ -1,0 +1,24 @@
+---Set the Koha module to Circulation
+
+
+Dear [% firstname%] [% surname %],
+
+Enclosed is a list of items that were not returned.  Your account has been billed the replacement cost of these items plus a non-refundable $5.00 processing fee for each item. If you are able to locate these items, please return these items immediately and we will remove the replacement cost, but not the $5.00 processing fee from your account. The cost of items that have not been returned within 15 days of this notice will not be refunded.  Accounts that are not settled within 15 days will be charged a $20.00 collection fee and be turned over to a debt collection agency. 
+
+The following item(s) is/are currently overdue and accruing overdue fines at the rate indicated in our Fines and Fees available on our website:
+
+[%title %][% IF author %] by [% author %][% END %] 
+Replacement Price: $[% replacementprice %]
+Processing Fee: $[% processing_fee_outstanding %]
+
+
+Please log into your account online for more details regarding all of the items you current have checked out, due dates, and current fines or fees. 
+
+Our business hours are Monday-Thursday 9am-8pm and Friday-Saturday 10am-4pm. Closed Sundays and Holidays. Just as a reminder you can sign into your account online at www.saratogsprings-ut.gov/library to pay fines and fees online.
+
+If you believe you have returned these items or previously paid for them, please contact me as soon as possible. If you have any questions, you may contact me at (801)766-6513 or crains@saratogasprings-ut.gov.
+
+
+Sincerely,
+
+Chelsea Rains, Library Assistant | City of Saratoga Springs Public Library
