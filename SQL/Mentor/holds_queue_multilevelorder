@@ -1,0 +1,25 @@
+--Order collections if on multi-levels
+
+
+SELECT  
+	CASE
+    WHEN i.ccode IN 
+    ('ABATTLE', 'ABCHAP', 'ABEE', 'ABREADER', 'ADISCOVER', 'AEARLYLIT', 'AJBOOKCD', 'AJCOMIC', 'AJDVD', 'AJFIC', 'AJNONFIC', 'AJSPA', 'AKINDLE', 'APHON', 'APICTURE', 'APOTTY', 'ARALONG', 'ASPA') 
+    THEN '1st Floor'
+
+    WHEN i.ccode IN 
+    ('ABOOKCD', 'ACD', 'ACOMIC', 'AFDVD', 'AFIC', 'AGAME', 'ALARGE', 'AMYST', 'ANONFIC', 'APER', 'AROM', 'ASCIFI', 'ATBOOKCD', 'ATCOMIC', 'ATECH', 'ATFIC', 'ATMANGA', 'ATNONFIC', 'AWEST')
+    THEN '2nd Floor'
+	END as floor,
+concat_ws(' ',b.title, b.subtitle) as Title,
+b.author as Author,
+c.lib as Collection,
+i.itemcallnumber as Call_Number,
+concat_ws(' ',i.barcode,if(t.item_level_request=0,'or any available','')) as Barcode,
+t.pickbranch as Send_To
+FROM tmp_holdsqueue t
+LEFT JOIN biblio b USING (biblionumber)
+LEFT JOIN items i USING (itemnumber)
+LEFT JOIN authorised_values c ON (c.authorised_value = i.ccode AND c.category = 'ccode')
+WHERE t.holdingbranch =  'AF' 
+ORDER BY floor, ccode, call_number
