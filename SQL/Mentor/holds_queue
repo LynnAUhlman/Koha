@@ -1,0 +1,15 @@
+--- Andrew created for timpanganos
+
+SELECT  concat_ws(' ',b.title, b.subtitle) as title,
+b.author,
+c.lib as collection,
+i.location,
+i.itemcallnumber,
+concat_ws(' ',i.barcode,if(t.item_level_request=0,'or any available','')) as barcode,
+t.pickbranch as send_to
+FROM tmp_holdsqueue t
+LEFT JOIN biblio b USING (biblionumber)
+LEFT JOIN items i USING (itemnumber)
+LEFT JOIN authorised_values c ON (c.authorised_value = i.ccode AND c.category = 'ccode')
+WHERE t.holdingbranch =  <<Library|branches>> 
+ORDER BY ccode
