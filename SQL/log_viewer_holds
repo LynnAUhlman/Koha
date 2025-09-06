@@ -1,0 +1,33 @@
+SELECT
+hal.timestamp AS action_date,
+h.reserve_id,
+CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', hal.user, '">', st.firstname, ' ', st.surname, '</a>') AS staff,
+hal.action,
+hal.interface,
+CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', p.borrowernumber, '">', p.firstname, ' ', p.surname, '</a>') AS patron,
+hal.info,
+b.title
+
+FROM 
+ (
+  SELECT *
+  FROM reserves
+  UNION ALL
+  SELECT *
+  FROM old_reserves
+ ) AS h
+LEFT JOIN (
+  SELECT timestamp, module, user, action, object, info, interface
+  FROM action_logs
+  WHERE module = 'holds'
+) AS hal ON h.reserve_id = hal.object
+LEFT JOIN borrowers p 
+  ON h.borrowernumber = p.borrowernumber
+LEFT JOIN borrowers st 
+  ON hal.user = st.borrowernumber
+LEFT JOIN biblio b 
+  USING (biblionumber)
+
+WHERE DATE(h.reservedate) BETWEEN <<between|date>> AND <<and|date>>
+
+GROUP BY hal.timestamp, h.reserve_id, staff, hal.action, patron, hal.object, hal.info, hal.interface, b.title
