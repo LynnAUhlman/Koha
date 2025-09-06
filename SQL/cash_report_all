@@ -1,0 +1,89 @@
+SELECT
+  c.branchcode,
+  r.name,
+  CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', man.borrowernumber, '">', man.firstname, ' ', man.surname, '</a>') AS manager,
+  CONCAT('<a href="/cgi-bin/koha/members/pay.pl?borrowernumber=', b.borrowernumber, '">', b.firstname, ' ', b.surname, '</a>') AS patron,
+  b.categorycode,
+  GROUP_CONCAT(
+    CONCAT_WS(
+      '<br>',
+      CONCAT_WS(' - ', FORMAT(ABS(o.amount), 2), IFNULL(d.debit_type_code, '')),
+      IFNULL(bib.title, d.description),
+      IFNULL(i.barcode, '')
+    )
+    SEPARATOR '<br><br>'
+  ) AS `Individual Fee & Item Details`,
+  t.description AS debit_type,
+  c.payment_type AS credit_type,
+  FORMAT(ABS(SUM(o.amount)), 2) AS payment,
+  c.date AS transactiondate
+  
+FROM accountlines c
+LEFT JOIN account_offsets o 
+  ON c.accountlines_id = o.credit_id
+LEFT JOIN accountlines d 
+  ON o.debit_id = d.accountlines_id
+LEFT JOIN account_debit_types t 
+  ON d.debit_type_code = t.code
+LEFT JOIN cash_registers r 
+  ON c.register_id = r.id
+LEFT JOIN borrowers man 
+  ON man.borrowernumber = c.manager_id
+LEFT JOIN borrowers b 
+  ON b.borrowernumber = c.borrowernumber
+LEFT JOIN items i 
+  ON d.itemnumber = i.itemnumber
+LEFT JOIN biblio bib 
+  ON i.biblionumber = bib.biblionumber
+
+WHERE 
+  c.branchcode LIKE <<Select a branch|branches:all>> 
+  AND DATEDIFF(c.date, <<Payment date between|date>>) >= 0
+  AND DATEDIFF(<<and|date>>, c.date) >= 0
+  AND o.type = 'APPLY' 
+  AND c.credit_type_code = 'PAYMENT' 
+  AND o.debit_id IS NOT NULL 
+  AND c.status IS NULL
+  
+GROUP BY
+  c.accountlines_id,
+  c.payment_type,
+  c.register_id,
+  c.branchcode,
+  manager,
+  patron,
+  b.categorycode,
+  t.description,
+  c.date
+  
+UNION ALL
+
+SELECT c.branchcode,
+  r.name AS 'register', 
+  CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', man.borrowernumber, '">', man.firstname, ' ', man.surname, '</a>') AS manager,
+  '',
+  '',
+  '',
+  t.description AS 'debit_type',
+  c.payment_type AS 'credit_type',
+  FORMAT(ABS(SUM(o.amount)), 2) AS 'payment',
+  c.timestamp
+
+FROM accountlines c
+LEFT JOIN account_offsets o ON c.accountlines_id = o.credit_id
+LEFT JOIN accountlines d ON o.debit_id = d.accountlines_id
+LEFT JOIN account_debit_types t ON (d.debit_type_code = t.code
+LEFT JOIN cash_registers r ON c.register_id = r.id
+LEFT JOIN borrowers mgr ON r.id = mgr.borrowernumber
+
+WHERE DATEDIFF(c.date, <<Payment date between|date>>) >= 0
+  AND DATEDIFF(<<and|date>>, c.date) >= 0
+  AND c.branchcode LIKE <<Select a branch|branches:all>> 
+  AND c.register_id LIKE <<Cash register|cash_registers:all>>
+  AND c.credit_type_code IS NOT NULL
+  AND d.debit_type_code IS NOT NULL
+
+GROUP BY c.payment_type, r.name, t.description
+  
+ORDER BY c.date
+  
