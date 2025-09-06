@@ -1,0 +1,5 @@
+SELECT b.title, b.author, i.barcode, i.itemcallnumber, i.itemnumber, IF(i.onloan IS NULL, '', 'checked out') as onloan
+ FROM items i
+ LEFT JOIN biblio b USING (biblionumber)
+ WHERE i.withdrawn = 0 and i.datelastseen <=  <<Last seen before:|date>> 
+ ORDER BY cn_sort ASC
