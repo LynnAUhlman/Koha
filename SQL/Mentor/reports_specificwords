@@ -1,0 +1,25 @@
+---from Michael A on partner list
+
+SELECT
+CONCAT('<a href=\"/cgi-bin/koha/reports/guided_reports.pl?id=', id, '&op=edit_form" target=\"_blank\">', id, '</a>' ) AS Link,
+    id AS 'ID No.',
+    report_name AS 'Report name',
+    CONCAT_WS(', ', borrowers.surname, borrowers.firstname) AS Creator,
+    date_created AS 'Date created',
+    last_modified AS 'Last modified',
+    regexp_replace(savedsql,<<Enter search term or phrase>>,concat('<span style="background-color: #FFFF00">','<b>',<<Enter search term or phrase>> ,'</b>','</span>')) AS 'SQL',
+    last_run,
+    type notes,
+    CASE public
+    WHEN '0' THEN 'No'
+        ELSE 'Yes'
+        END AS 'Public?',
+    report_area ,
+    report_group,
+    report_subgroup
+FROM
+saved_sql
+    LEFT JOIN borrowers ON (saved_sql.borrowernumber=borrowers.borrowernumber)
+WHERE
+savedsql regexp <<Enter search term or phrase>>
+    AND id != '[this report's ID number]'
