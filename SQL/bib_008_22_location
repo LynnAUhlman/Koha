@@ -1,0 +1,15 @@
+SELECT 
+  b.biblionumber,
+  SUBSTRING(ExtractValue(bm.metadata,'//controlfield[@tag="008"]'), 23, 1) AS '008_22',
+  i.itemnumber,
+  b.title
+
+FROM biblio AS b
+LEFT JOIN biblio_metadata AS bm
+  ON bm.biblionumber = b.biblionumber
+LEFT JOIN items AS i
+  ON b.biblionumber = i.biblionumber
+
+WHERE COALESCE(SUBSTRING(ExtractValue(bm.metadata,'//controlfield[@tag="008"]'), 23, 1), '') IN ('|', ' ', '')
+  AND i.location IN ('BOARDBK', 'EASYREAD', 'JAUDIO', 'JBIO', 'JDVD', 'JFIC', 'JGRAPHIC', 'JKIT', 'JMAG', 'JMANGA', 'JNF', 'JRFIC', 'JSPANISH')
+ORDER BY b.biblionumber
