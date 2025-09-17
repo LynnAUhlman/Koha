@@ -1,0 +1,17 @@
+SELECT 
+  CASE 
+    WHEN i.location IN ('ANF','JNONFC','TNONFC')
+         AND i.itemcallnumber REGEXP '^[0-9]'
+      THEN CONCAT(i.location, ' ', SUBSTRING(i.itemcallnumber, 1, 1), '00')
+    ELSE i.location
+  END AS LocationBucket,
+  SUM(s.type = 'issue') AS Checkouts,
+  SUM(s.type = 'renew') AS Renewals
+FROM statistics s
+JOIN items i
+  ON i.itemnumber = s.itemnumber
+WHERE 
+  DATE(s.datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
+  AND s.type IN ('issue','renew')
+GROUP BY LocationBucket
+ORDER BY LocationBucket
