@@ -48,9 +48,11 @@ SELECT
   SUM(s.type='return') AS CheckIn
 
 FROM statistics s
-JOIN items i
-  ON i.itemnumber = s.itemnumber
-  
+LEFT JOIN (
+           SELECT itemnumber, location, itemcallnumber FROM items
+           UNION ALL
+           SELECT itemnumber, location, itemcallnumber FROM deleteditems
+          ) i ON s.itemnumber = i.itemnumber
 WHERE 
   DATE(s.datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
   AND s.type IN ('issue','renew','return')
