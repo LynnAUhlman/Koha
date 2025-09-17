@@ -44,7 +44,8 @@ SELECT
   END AS locations,
 
   SUM(s.type='issue') AS Checkouts,
-  SUM(s.type='renew') AS Renewals
+  SUM(s.type='renew') AS Renewals,
+  SUM(s.type='return') AS CheckIn
 
 FROM statistics s
 JOIN items i
@@ -52,7 +53,7 @@ JOIN items i
   
 WHERE 
   DATE(s.datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
-  AND s.type IN ('issue','renew')
+  AND s.type IN ('issue','renew','return')
   
 GROUP BY locations
 ORDER BY locations
