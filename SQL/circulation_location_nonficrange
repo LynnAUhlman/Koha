@@ -41,7 +41,7 @@ SELECT
       END
     ELSE
       i.location
-  END AS LocationBucket,
+  END AS locations,
 
   SUM(s.type='issue') AS Checkouts,
   SUM(s.type='renew') AS Renewals
@@ -54,5 +54,5 @@ WHERE
   DATE(s.datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
   AND s.type IN ('issue','renew')
   
-GROUP BY LocationBucket
-ORDER BY LocationBucket
+GROUP BY locations
+ORDER BY locations
