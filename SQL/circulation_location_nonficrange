@@ -1,0 +1,58 @@
+SELECT 
+  CASE 
+    WHEN i.location IN ('ANF','JNONFC','TNONFC') THEN
+      CASE 
+        WHEN
+          LEAST(
+            IFNULL(NULLIF(LOCATE('0', i.itemcallnumber),0), 9999),
+            IFNULL(NULLIF(LOCATE('1', i.itemcallnumber),0), 9999),
+            IFNULL(NULLIF(LOCATE('2', i.itemcallnumber),0), 9999),
+            IFNULL(NULLIF(LOCATE('3', i.itemcallnumber),0), 9999),
+            IFNULL(NULLIF(LOCATE('4', i.itemcallnumber),0), 9999),
+            IFNULL(NULLIF(LOCATE('5', i.itemcallnumber),0), 9999),
+            IFNULL(NULLIF(LOCATE('6', i.itemcallnumber),0), 9999),
+            IFNULL(NULLIF(LOCATE('7', i.itemcallnumber),0), 9999),
+            IFNULL(NULLIF(LOCATE('8', i.itemcallnumber),0), 9999),
+            IFNULL(NULLIF(LOCATE('9', i.itemcallnumber),0), 9999)
+          ) < 9999
+        THEN
+          CONCAT(
+            i.location, ' ',
+            SUBSTRING(
+              i.itemcallnumber,
+              LEAST(
+                IFNULL(NULLIF(LOCATE('0', i.itemcallnumber),0), 9999),
+                IFNULL(NULLIF(LOCATE('1', i.itemcallnumber),0), 9999),
+                IFNULL(NULLIF(LOCATE('2', i.itemcallnumber),0), 9999),
+                IFNULL(NULLIF(LOCATE('3', i.itemcallnumber),0), 9999),
+                IFNULL(NULLIF(LOCATE('4', i.itemcallnumber),0), 9999),
+                IFNULL(NULLIF(LOCATE('5', i.itemcallnumber),0), 9999),
+                IFNULL(NULLIF(LOCATE('6', i.itemcallnumber),0), 9999),
+                IFNULL(NULLIF(LOCATE('7', i.itemcallnumber),0), 9999),
+                IFNULL(NULLIF(LOCATE('8', i.itemcallnumber),0), 9999),
+                IFNULL(NULLIF(LOCATE('9', i.itemcallnumber),0), 9999)
+              ),
+              1
+            ),
+            '00'
+          )
+        ELSE
+          i.location
+      END
+    ELSE
+      i.location
+  END AS LocationBucket,
+
+  SUM(s.type='issue') AS Checkouts,
+  SUM(s.type='renew') AS Renewals
+
+FROM statistics s
+JOIN items i
+  ON i.itemnumber = s.itemnumber
+  
+WHERE 
+  DATE(s.datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
+  AND s.type IN ('issue','renew')
+  
+GROUP BY LocationBucket
+ORDER BY LocationBucket
