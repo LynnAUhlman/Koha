@@ -1,0 +1,20 @@
+SELECT
+  s.branch,
+  MONTHNAME(s.datetime)  AS month,
+  TRIM(BOTH ' .:/' FROM SUBSTRING_INDEX(SUBSTRING_INDEX(b.title, ' /', 1), ' :', 1)) AS title,
+  SUM(s.type = 'issue') AS checkouts,
+  SUM(s.type = 'renew') AS renewals,
+  SUM(s.type = 'localuse') AS localuse,
+  COUNT(*) AS circ_total
+  
+FROM statistics s
+JOIN items i ON i.itemnumber = s.itemnumber
+JOIN biblio b ON b.biblionumber = i.biblionumber
+
+WHERE YEAR(s.datetime) = <<Year (yyyy)>>
+  AND s.type IN ('issue','renew','localuse')
+  AND s.branch = <<Library|branches>>
+  AND i.ccode  = 'MAG'
+  
+GROUP BY s.branch, month, title
+ORDER BY MONTH(s.datetime), title
