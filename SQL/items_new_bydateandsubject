@@ -1,0 +1,22 @@
+select
+  i.itemnumber,
+  i.dateaccessioned,
+  i.barcode,
+  i.itemcallnumber,
+  b.title,
+  b.author,
+  bi.publishercode,
+  extractvalue(bm.metadata,'//datafield[@tag="650"]/subfield[@code="a"]') as subject,
+  i.homebranch,
+  i.holdingbranch,
+  i.location,
+  i.ccode
+from biblio b
+inner join biblio_metadata bm using (biblionumber)
+left join items i using (biblionumber)
+left join biblioitems bi on i.biblioitemnumber=bi.biblioitemnumber
+WHERE bm.format = 'marcxml'
+  AND LOWER(ExtractValue(bm.metadata,'//datafield[@tag="650"]/subfield[@code="a"]'))
+      LIKE CONCAT('%', LOWER(<<Subject>>), '%')
+  AND i.dateaccessioned BETWEEN <<Accessioned beginning date|date>> AND <<end date|date>>
+order by i.dateaccessioned desc
