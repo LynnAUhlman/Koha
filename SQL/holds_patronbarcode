@@ -2,14 +2,16 @@ SELECT
   r.reserve_id,
   p.cardnumber,
   r.biblionumber,
-  r.timestamp AS "Date Placed",
+  b.title,
+  r.timestamp AS "date_placed",
   r.priority,
-  r.branchcode AS "Pickup Library"
+  r.branchcode AS "pickup_library"
 FROM
   reserves r
 LEFT JOIN borrowers p ON r.borrowernumber = p.borrowernumber
+LEFT JOIN biblio b ON r.biblionumber = b.biblionumber
 WHERE
-  p.cardnumber = [insertpatronbarcode]
+  p.cardnumber = <<patron barcode>>
   AND r.cancellationdate IS NULL
   AND r.found IS NULL
 ORDER BY r.timestamp
