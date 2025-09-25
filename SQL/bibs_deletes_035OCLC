@@ -1,0 +1,16 @@
+SELECT
+  m.biblionumber AS LSN,
+  ExtractValue(
+    m.metadata,
+    '//datafield[@tag="035"]/subfield[@code="a"][contains(., "(OCoLC)")][1]'
+  ) AS OCLC_Number
+FROM deletedbiblio_metadata m
+WHERE m.timestamp >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
+  AND ExtractValue(
+        m.metadata,
+        '//datafield[@tag="035"]/subfield[@code="a"][contains(., "(OCoLC)")][1]'
+      ) IS NOT NULL
+  AND ExtractValue(
+        m.metadata,
+        '//datafield[@tag="035"]/subfield[@code="a"][contains(., "(OCoLC)")][1]'
+      ) <> ''
