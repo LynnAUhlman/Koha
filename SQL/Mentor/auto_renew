@@ -1,0 +1,13 @@
+---looking for autorenew problems
+---posted by lucas https://bywater.slack.com/archives/CATNX99AM/p1759323710797689 written by 'Sam' (?)
+
+select * from issues
+
+where issues.date_due <= DATE(now())
+and issues.auto_renew = 1 
+and issues.renewals_count != 0 
+and issues.auto_renew_error like "auto_too_soon"
+
+Group By issues.borrowernumber 
+
+ORDER BY issues.date_due
