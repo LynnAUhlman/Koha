@@ -1,0 +1,15 @@
+SELECT 
+  b.title, b.author, i.barcode, i.itemcallnumber,
+  b.copyrightdate, v.name AS vendor_name
+FROM biblio b
+LEFT JOIN items i
+  ON i.biblionumber = b.biblionumber
+  AND i.notforloan = -1
+LEFT JOIN aqorders o
+  ON o.biblionumber = b.biblionumber
+LEFT JOIN aqbasket ab
+  ON ab.basketno = o.basketno
+LEFT JOIN aqbooksellers v
+  ON v.id = ab.booksellerid
+WHERE v.id = 4
+ORDER BY b.title
