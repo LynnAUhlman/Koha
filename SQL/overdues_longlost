@@ -1,0 +1,25 @@
+/*use with a cron to capture the previous 7 days from when the cron is run*\
+
+
+SELECT 
+  i.barcode, 
+  b.title,
+  i.itemcallnumber, 
+  i.enumchron,
+  iss.date_due,
+  CONCAT (p.surname, ', ', p.preferred_name) AS patron_name,
+  CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', p.borrowernumber, '">', p.cardnumber, '</a>') AS cardnumber,
+  p.categorycode,
+  p.email,
+  p.phone
+  
+FROM items i 
+LEFT JOIN authorised_values av ON av.authorised_value = i.itemlost
+LEFT JOIN issues iss ON iss.itemnumber = i.itemnumber
+LEFT JOIN borrowers p ON p.borrowernumber = iss.borrowernumber
+LEFT JOIN biblio b ON b.biblionumber = i.biblionumber
+
+WHERE av.category = 'LOST'
+  AND av.authorised_value = '2'
+AND iss.date_due BETWEEN (NOW() - INTERVAL 7 DAY) AND NOW()
+ORDER BY p.cardnumber
