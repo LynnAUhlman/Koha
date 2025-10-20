@@ -1,0 +1,9 @@
+SELECT timestamp, module, action, interface, user, object, info
+FROM action_logs
+WHERE info LIKE '%OVERDUES_PROCESS%'
+AND (
+        action LIKE 'CRE%RESTRICTION' 
+        OR action = 'DELETE_RESTRICTION'
+      )
+  AND timestamp BETWEEN <<Start|date>> AND <<End|date>>
+ORDER BY timestamp DESC
