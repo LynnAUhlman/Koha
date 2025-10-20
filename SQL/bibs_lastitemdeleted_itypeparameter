@@ -1,0 +1,8 @@
+SELECT b.biblionumber, b.title, b.author
+FROM biblio b
+LEFT JOIN items i USING (biblionumber) 
+LEFT JOIN deleteditems di USING (biblionumber)
+WHERE i.itemnumber IS NULL 
+      AND di.itype = <<Item type|itemtypes>> 
+      AND b.biblionumber IN (SELECT biblionumber FROM deleteditems)
+GROUP BY b.biblionumber
