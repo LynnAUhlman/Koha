@@ -1,0 +1,6 @@
+SELECT borrowernumber, cardnumber, accountlines.amountoutstanding
+FROM accountlines 
+LEFT JOIN borrowers USING (borrowernumber) 
+WHERE borrowers.debarred !='' 
+GROUP BY borrowernumber
+HAVING SUM(accountlines.amountoutstanding) < 6
