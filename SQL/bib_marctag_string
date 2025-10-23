@@ -1,0 +1,11 @@
+SELECT
+  CONCAT('<a href=\"/cgi-bin/koha/catalogue/detail.pl?biblionumber=', b.biblionumber, '\">', b.title, '</a>' ) AS 'title',
+  b.biblionumber, i.itemnumber, i.barcode, i.location, i.ccode, i.itemcallnumber, i.itype, i.datelastseen,
+  LOWER(ExtractValue(bm.metadata,'//datafield[@tag="583"]/subfield[@code="a"]')) AS note_583
+FROM biblio b
+JOIN biblio_metadata bm USING (biblionumber)
+JOIN items i USING (biblionumber)
+WHERE bm.format = 'marcxml'
+  AND ExtractValue(bm.metadata,'//datafield[@tag="583"]/subfield[@code="a"]')
+      LIKE '%missing%'
+ORDER BY i.location, i.itemcallnumber, i.datelastseen
