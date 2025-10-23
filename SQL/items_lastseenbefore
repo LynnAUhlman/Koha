@@ -1,0 +1,9 @@
+SELECT
+  CONCAT('<a href=\"/cgi-bin/koha/catalogue/detail.pl?biblionumber=', b.biblionumber, '\">', b.title, '</a>' ) AS 'title',
+  b.biblionumber, i.itemnumber, i.barcode, i.location, i.ccode, i.itemcallnumber, i.itype, i.datelastseen
+FROM items i
+LEFT JOIN biblio b using (biblionumber)
+WHERE
+  DATE(i.datelastseen) < <<Prior to|date>>
+  
+ORDER BY i.location, i.itemcallnumber, i.datelastseen;
