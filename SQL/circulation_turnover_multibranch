@@ -1,0 +1,38 @@
+SELECT 
+    br.branchname AS 'Library',
+    itp.description AS 'Item Type',
+    IFNULL(it_counts.item_count, 0) AS 'Item Count',
+    COUNT(st.datetime) AS 'Checkouts',
+    ROUND(
+      CASE 
+        WHEN IFNULL(it_counts.item_count,0) = 0 THEN 0
+        ELSE COUNT(st.datetime) / it_counts.item_count
+      END, 2
+    ) AS 'Turnover'
+FROM statistics st
+LEFT JOIN items i 
+    ON st.itemnumber = i.itemnumber
+LEFT JOIN (
+    SELECT 
+        homebranch,
+        itype,
+        COUNT(*) AS item_count
+    FROM items
+    WHERE homebranch IN <<Library|branches:in>>
+    GROUP BY homebranch, itype
+) AS it_counts
+    ON it_counts.itype = i.itype
+   AND it_counts.homebranch = i.homebranch
+LEFT JOIN branches br 
+    ON i.homebranch = br.branchcode
+LEFT JOIN itemtypes itp 
+    ON i.itype = itp.itemtype
+WHERE DATE(st.datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
+  AND i.homebranch IN <<Library|branches:in>>
+  AND i.withdrawn = 0
+  AND i.itemlost = 0
+  AND i.damaged = 0
+  AND i.notforloan = 0
+  AND st.type = 'issue'
+GROUP BY br.branchname, i.itype
+ORDER BY br.branchname, itp.description
