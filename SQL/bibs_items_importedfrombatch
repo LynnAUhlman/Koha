@@ -1,0 +1,14 @@
+SELECT 
+  r.import_batch_id, 
+  CONCAT('<a href=\"/cgi-bin/koha/cataloguing/addbooks.pl?q=+', b.biblionumber, '\">', b.biblionumber, '</a>') AS bib_record,
+  CONCAT('<a href=\"/cgi-bin/koha/cataloguing/additem.pl?op=edititem&itemnumber=', i.itemnumber, '#edititem', '\">', i.itemnumber, '</a>' ) AS item_record,
+  CONCAT('<a href=\"/cgi-bin/koha/cataloguing/addbooks.pl?q=+', bi.isbn, '\">', bi.isbn, '</a>' ) AS isbn,
+  b.title, b.author, r.overlay_status AS 'match_status', r.status, i.itemnumber, b.biblionumber
+FROM import_records r
+  LEFT JOIN import_items ri ON (r.import_record_id = ri.import_record_id)
+  LEFT JOIN items i ON (ri.itemnumber = i.itemnumber)
+  LEFT JOIN import_biblios rb ON (r.import_record_id = rb.import_record_id)
+  LEFT JOIN biblio b ON (rb.matched_biblionumber = b.biblionumber)
+  LEFT JOIN biblioitems bi ON (rb.matched_biblionumber = bi.biblionumber)
+WHERE r.record_type = 'biblio'
+  AND r.import_batch_id = <<Enter a batch number>>
