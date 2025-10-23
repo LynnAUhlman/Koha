@@ -1,0 +1,10 @@
+SELECT
+  CONCAT('<a href=\"/cgi-bin/koha/catalogue/detail.pl?biblionumber=', b.biblionumber, '\">', b.title, '</a>' ) AS 'title',
+  b.biblionumber, i.itemnumber, i.barcode, i.location, i.ccode, i.itemcallnumber, i.itype, i.datelastseen
+FROM items i
+LEFT JOIN biblio b using (biblionumber)
+WHERE
+  DATE(i.datelastseen) BETWEEN <<Between|date>> and <<and|date>>
+  AND i.itemlost = 3
+  
+ORDER BY i.location, i.itemcallnumber, i.datelastseen
