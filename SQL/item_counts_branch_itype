@@ -1,0 +1,10 @@
+SELECT 
+    br.branchname AS 'Library',
+    itp.description AS 'Item Type',
+    COUNT(DISTINCT i.itemnumber) AS 'Item Count'
+FROM items i
+LEFT JOIN branches br ON i.homebranch = br.branchcode
+LEFT JOIN itemtypes itp ON i.itype = itp.itemtype
+
+GROUP BY br.branchname, itp.description
+ORDER BY br.branchname, itp.description
