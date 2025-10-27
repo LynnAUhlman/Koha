@@ -1,0 +1,13 @@
+---Update ccode to itype in Select to switch to itype perspective and then update GROUP BY ccode to itype to show a tidy sum
+---If localuse is also needed replace   AND type IN ('issue', 'renew') with   AND type IN ('issue', 'renew', 'localuse')
+
+SELECT 
+  ccode,
+  SUM(CASE WHEN type = 'issue' THEN 1 ELSE 0 END) AS Checkouts,
+  SUM(CASE WHEN type = 'renew' THEN 1 ELSE 0 END) AS Renewals
+/*SUM(CASE WHEN type = 'localuse' THEN 1 ELSE 0 END) AS LocalUse
+FROM statistics
+WHERE 
+  DATE(datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
+  AND type IN ('issue', 'renew')
+GROUP BY ccode with rollup
