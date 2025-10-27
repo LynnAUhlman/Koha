@@ -1,0 +1,56 @@
+SELECT
+  CONCAT(man.firstname,' ',man.surname) AS `manager name`,
+  CONCAT('<a href="/cgi-bin/koha/members/boraccount.pl?borrowernumber=', b.borrowernumber, '">', b.cardnumber, '</a>') AS `cardnumber`,
+  CONCAT(b.firstname,' ',b.surname) AS `patron name`,
+  br.branchname AS `Transaction Library`,
+  DATE(ao.created_on) AS `Transaction date`,
+  COALESCE(v.lib, a.payment_type) AS `payment type`,
+  COALESCE(act.description, a.description, 'Other') AS `credit desc`,
+  COALESCE(adt.description, ad.description, 'Other') AS `debit desc`,
+  COALESCE(a.description, ad.description) AS `account_description`,
+  FORMAT(ABS(ao.amount), 2) AS `amount applied`,
+  bib.title AS `Titles`,
+  i.barcode AS `Barcodes`,
+  i.itype AS `Item Types`,
+  CONCAT_WS('<br>', NULLIF(a.note,''), NULLIF(ad.note,'')) AS `notes`
+FROM account_offsets ao
+LEFT JOIN accountlines a ON a.accountlines_id  = ao.credit_id
+LEFT JOIN accountlines ad  ON ad.accountlines_id = ao.debit_id
+LEFT JOIN account_debit_types adt ON ad.debit_type_code = adt.code
+LEFT JOIN account_credit_types act ON a.credit_type_code = act.code
+LEFT JOIN borrowers man ON man.borrowernumber = a.manager_id
+LEFT JOIN borrowers b ON b.borrowernumber = a.borrowernumber
+LEFT JOIN branches br ON br.branchcode = a.branchcode
+LEFT JOIN items i ON i.itemnumber = ad.itemnumber
+LEFT JOIN biblio bib ON bib.biblionumber = i.biblionumber
+LEFT JOIN authorised_values v ON v.authorised_value = a.payment_type
+LEFT JOIN authorised_value_categories c ON c.category_name = v.category AND c.category_name = 'payment_type'
+WHERE a.branchcode LIKE <<Select a branch|branches:all>>
+  AND DATE(ao.created_on) BETWEEN <<Dates between|date>> AND <<And|date>>
+  AND ao.type = 'APPLY'
+  AND ao.debit_id IS NOT NULL
+
+UNION ALL
+
+SELECT
+  '', '', '', '', '', '', '', '', '',  
+  FORMAT(ABS(SUM(ao.amount)), 2) AS 'items',
+  '', '', '', ''
+FROM account_offsets ao
+LEFT JOIN accountlines a ON a.accountlines_id  = ao.credit_id
+LEFT JOIN accountlines ad  ON ad.accountlines_id = ao.debit_id
+LEFT JOIN account_debit_types adt ON ad.debit_type_code = adt.code
+LEFT JOIN account_credit_types act ON a.credit_type_code = act.code
+LEFT JOIN borrowers man ON man.borrowernumber = a.manager_id
+LEFT JOIN borrowers b ON b.borrowernumber = a.borrowernumber
+LEFT JOIN branches br ON br.branchcode = a.branchcode
+LEFT JOIN items i ON i.itemnumber = ad.itemnumber
+LEFT JOIN biblio bib ON bib.biblionumber = i.biblionumber
+LEFT JOIN authorised_values v ON v.authorised_value = a.payment_type
+LEFT JOIN authorised_value_categories c ON c.category_name = v.category AND c.category_name = 'payment_type'
+WHERE a.branchcode LIKE <<Select a branch|branches:all>>
+  AND DATE(ao.created_on) BETWEEN <<Dates between|date>> AND <<And|date>>
+  AND ao.type = 'APPLY'
+  AND ao.debit_id IS NOT NULL
+
+GROUP BY ao.created_on, br.branchname, b.surname, b.firstname
