@@ -1,0 +1,7 @@
+SELECT
+  m.biblionumber,
+  LOWER(ExtractValue(m.metadata, '//datafield[@tag="856"]/subfield[@code="u"]')) AS url
+FROM biblio_metadata m
+WHERE
+  LOWER(ExtractValue(m.metadata, '//datafield[@tag="856"]/subfield[@code="u"]')) NOT LIKE '%proquest%'
+  AND TRIM(ExtractValue(m.metadata, '//datafield[@tag="856"]/subfield[@code="u"]')) <> ''
