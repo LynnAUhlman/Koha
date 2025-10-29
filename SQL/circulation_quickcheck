@@ -5,7 +5,7 @@ SELECT
   ccode,
   SUM(CASE WHEN type = 'issue' THEN 1 ELSE 0 END) AS Checkouts,
   SUM(CASE WHEN type = 'renew' THEN 1 ELSE 0 END) AS Renewals
-/*SUM(CASE WHEN type = 'localuse' THEN 1 ELSE 0 END) AS LocalUse
+/*SUM(CASE WHEN type = 'localuse' THEN 1 ELSE 0 END) AS LocalUse*/
 FROM statistics
 WHERE 
   DATE(datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
