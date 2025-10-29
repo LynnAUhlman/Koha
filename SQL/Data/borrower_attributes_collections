@@ -1,0 +1,1 @@
+select group_concat(id separator '|'), borrowernumber, code, group_concat(attribute separator '|'),  count(*) from borrower_attributes where code='UMS' group by borrowernumber, code having count(*) > 1
