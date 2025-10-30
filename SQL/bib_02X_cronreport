@@ -1,0 +1,20 @@
+SELECT 
+  ExtractValue(bm.metadata, '//datafield[@tag="020"]/subfield[@code="a"]') AS ISBN,
+  ExtractValue(bm.metadata, '//datafield[@tag="022"]/subfield[@code="a"]') AS ISSN,
+  ExtractValue(bm.metadata, '//datafield[@tag="024"]/subfield[@code="a"]') AS Other_Standard_Number,
+  ExtractValue(bm.metadata, '//datafield[@tag="028"]/subfield[@code="a"]') AS Publisher_Number
+FROM 
+  biblio b
+  JOIN biblio_metadata bm USING (biblionumber)
+  JOIN items i USING (biblionumber)
+WHERE 
+  i.homebranch = 'WCL'
+  AND i.itype IN ('BOOK', 'DVD', 'BLU-RAY', 'BLUE-RAY', 'BLU-RAYNEW', 'BRSERIES', 'BLURAYDVD', 'DVD', 'DVD NEW', 'DVDNEWR', 'DVDSERIES')
+  AND (
+      COALESCE(ExtractValue(bm.metadata, '//datafield[@tag="020"]/subfield[@code="a"]'), '') <> '' OR
+      COALESCE(ExtractValue(bm.metadata, '//datafield[@tag="022"]/subfield[@code="a"]'), '') <> '' OR
+      COALESCE(ExtractValue(bm.metadata, '//datafield[@tag="024"]/subfield[@code="a"]'), '') <> '' OR
+      COALESCE(ExtractValue(bm.metadata, '//datafield[@tag="028"]/subfield[@code="a"]'), '') <> ''
+   )
+GROUP BY 
+  b.biblionumber
