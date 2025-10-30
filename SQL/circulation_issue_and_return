@@ -1,0 +1,19 @@
+select b.title, i.itype, i.barcode, i.stocknumber, date(sti.datetime) AS issued, 
+(
+         SELECT DATE(MIN(sr.datetime))
+         FROM statistics sr
+         WHERE sr.type = 'return'
+           AND sr.itemnumber = sti.itemnumber
+           AND sr.borrowernumber = sti.borrowernumber
+           AND sr.datetime >= sti.datetime
+       ) AS returned,
+CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', p.borrowernumber, '">', p.cardnumber, '</a>') AS cardnumber, p.categorycode 
+from statistics sti
+left join items i ON sti.itemnumber = i.itemnumber
+left join biblio b ON i.biblionumber = b.biblionumber 
+left join borrowers p ON sti.borrowernumber = p.borrowernumber
+\*current date in where statement is based on the 'issue' date. if the partner wants it from the 'return' date that will limit the results returned.*/
+where sti.type = 'issue' and date(sti.datetime) between <<Between this date (YYYY-MM-DD)|date>> and <<and this date (YYYY-MM-DD)|date>> 
+  and i.itype = '[enter itype minus brackets]' 
+  and p.categorycode = '[enter category code minus brackets]' 
+order by i.barcode asc, p.cardnumber asc LIMIT 100000
