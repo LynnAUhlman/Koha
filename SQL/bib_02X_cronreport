@@ -1,3 +1,6 @@
+/*report ensures that there won't be duplicate bibs through the GROUP BY b.bilionumber*\
+
+
 SELECT 
   ExtractValue(bm.metadata, '//datafield[@tag="020"]/subfield[@code="a"]') AS ISBN,
   ExtractValue(bm.metadata, '//datafield[@tag="022"]/subfield[@code="a"]') AS ISSN,
