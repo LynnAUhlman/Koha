@@ -1,0 +1,20 @@
+---used for a laptop report, but could be used for other kinds of issues/returns, especially LOT which might have more frequent activity
+
+select b.title, i.itype, i.barcode, i.stocknumber, date(sti.datetime) AS issued, 
+(
+         SELECT DATE(MIN(sr.datetime))
+         FROM statistics sr
+         WHERE sr.type = 'return'
+           AND sr.itemnumber = sti.itemnumber
+           AND sr.borrowernumber = sti.borrowernumber
+           AND sr.datetime >= sti.datetime
+       ) AS returned,
+CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', p.borrowernumber, '">', p.cardnumber, '</a>') AS cardnumber, p.categorycode 
+from statistics sti
+left join items i ON sti.itemnumber = i.itemnumber
+left join biblio b ON i.biblionumber = b.biblionumber 
+left join borrowers p ON sti.borrowernumber = p.borrowernumber
+where sti.type = 'issue' and date(sti.datetime) between <<Between this date (MMDDYYYY)|date>> and <<and this date (MMDDYYYY)|date>> 
+  and i.itype = 'LTLAP' 
+  and (p.categorycode = '[enter patron category]' OR p.categorycode = '[enter patron category]')
+order by i.barcode asc, p.cardnumber asc
