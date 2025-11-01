@@ -1,0 +1,5 @@
+===COUNT===
+SELECT count(*) FROM aqorders WHERE COALESCE(quantityreceived,0) > COALESCE(quantity,0);
+
+===LIST===
+SELECT * FROM aqorders WHERE COALESCE(quantityreceived,0) > COALESCE(quantity,0);
