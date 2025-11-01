@@ -1,0 +1,5 @@
+===COUNT===
+SELECT count(*) FROM aqorders WHERE (orderstatus = 'cancelled' OR COALESCE(quantity,0) = 0);
+
+===LIST===
+SELECT * FROM aqorders WHERE (orderstatus = 'cancelled' OR COALESCE(quantity,0) = 0);
