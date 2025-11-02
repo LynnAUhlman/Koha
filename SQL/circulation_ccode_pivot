@@ -1,0 +1,47 @@
+---shows each patron transaction indicating what ccode they checked out
+---no borrower information, but can be easily added if needed
+
+SELECT 
+  DATE(s.datetime) AS 'date',
+  p.categorycode AS 'category_code',
+  CASE WHEN i.ccode='AUDIOBOOKS' THEN 1 ELSE 0 END AS 'AUDIOBOOKS',
+  CASE WHEN i.ccode='BIOGRAPHY' THEN 1 ELSE 0 END AS 'BIOGRAPHY',
+  CASE WHEN i.ccode='BOOKPACKS' THEN 1 ELSE 0 END AS 'BOOKPACKS',
+  CASE WHEN i.ccode='FICTION' THEN 1 ELSE 0 END AS 'FICTION',
+  CASE WHEN i.ccode='HOTSPOT' THEN 1 ELSE 0 END AS 'HOTSPOT',
+  CASE WHEN i.ccode='ILL' THEN 1 ELSE 0 END AS 'ILL',
+  CASE WHEN i.ccode='JAUDIO' THEN 1 ELSE 0 END AS 'JAUDIO',
+  CASE WHEN i.ccode='JBEGRDR' THEN 1 ELSE 0 END AS 'JBEGRDR',
+  CASE WHEN i.ccode='JBIO' THEN 1 ELSE 0 END AS 'JBIO',
+  CASE WHEN i.ccode='JBOARD' THEN 1 ELSE 0 END AS 'JBOARD',
+  CASE WHEN i.ccode='JDVD' THEN 1 ELSE 0 END AS 'JDVD',
+  CASE WHEN i.ccode='JEASY' THEN 1 ELSE 0 END AS 'JEASY',
+  CASE WHEN i.ccode='JELEMFIC' THEN 1 ELSE 0 END AS 'JELEMFIC',
+  CASE WHEN i.ccode='JFIC' THEN 1 ELSE 0 END AS 'JFIC',
+  CASE WHEN i.ccode='JGN' THEN 1 ELSE 0 END AS 'JGN',
+  CASE WHEN i.ccode='JNONFIC' THEN 1 ELSE 0 END AS 'JNONFIC',
+  CASE WHEN i.ccode='KIT' THEN 1 ELSE 0 END AS 'KIT',
+  CASE WHEN i.ccode='LAUNCHPAD' THEN 1 ELSE 0 END AS 'LAUNCHPAD',
+  CASE WHEN i.ccode='LP' THEN 1 ELSE 0 END AS 'LP',
+  CASE WHEN i.ccode='NF' THEN 1 ELSE 0 END AS 'NF',
+  CASE WHEN i.ccode='PLAYAWAY' THEN 1 ELSE 0 END AS 'PLAYAWAY',
+  CASE WHEN i.ccode='PRO' THEN 1 ELSE 0 END AS 'PRO',
+  CASE WHEN i.ccode='REF' THEN 1 ELSE 0 END AS 'REF',
+  CASE WHEN i.ccode='ROOM' THEN 1 ELSE 0 END AS 'ROOM',
+  CASE WHEN i.ccode='SEEDS' THEN 1 ELSE 0 END AS 'SEEDS',
+  CASE WHEN i.ccode='SOLACTVY' THEN 1 ELSE 0 END AS 'SOLACTVY',
+  CASE WHEN i.ccode='SPANISH' THEN 1 ELSE 0 END AS 'SPANISH',
+  CASE WHEN i.ccode='TECHMISC' THEN 1 ELSE 0 END AS 'TECHMISC',
+  CASE WHEN i.ccode='VIDEOS' THEN 1 ELSE 0 END AS 'VIDEOS',
+  CASE WHEN i.ccode='YAFIC' THEN 1 ELSE 0 END AS 'YAFIC',
+  CASE WHEN i.ccode='YAGN' THEN 1 ELSE 0 END AS 'YAGN',
+  CASE WHEN i.ccode='YANF' THEN 1 ELSE 0 END AS 'YANF',
+  CASE WHEN i.ccode='ZCEMETERY' THEN 1 ELSE 0 END AS 'ZCEMETERY'
+FROM statistics s
+LEFT JOIN borrowers p ON s.borrowernumber=p.borrowernumber
+LEFT JOIN items i ON s.itemnumber=i.itemnumber
+WHERE 
+  DATE(s.datetime) BETWEEN <<Checked out between|date>> AND <<and|date>>
+  AND s.type='issue'
+ORDER BY
+  s.datetime ASC, p.borrowernumber ASC
