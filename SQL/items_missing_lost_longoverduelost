@@ -1,0 +1,11 @@
+SELECT b.title, 
+CONCAT('<a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=',i.itemnumber,'">',i.barcode, '</a>') AS barcode,
+av.lib AS status, i.itemlost_on AS status_changed, it.description AS itemtype
+FROM items i
+JOIN biblio b ON b.biblionumber = i.biblionumber
+LEFT JOIN itemtypes it ON it.itemtype = i.itype
+LEFT JOIN authorised_values av ON av.category = 'LOST' AND av.authorised_value = i.itemlost
+WHERE it.description IN ('McNaughton', 'McNaughton Book (Shared)')
+  AND i.itemlost_on BETWEEN <<Start date|date>> AND <<End date|date>>
+  AND av.lib IN ('Missing', 'Lost', 'Long overdue (lost)')
+ORDER BY i.itemlost_on DESC, b.title
