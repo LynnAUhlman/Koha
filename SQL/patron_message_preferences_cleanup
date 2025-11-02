@@ -1,6 +1,6 @@
 SELECT
 CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', p.borrowernumber, '">', p.cardnumber, '</a>') AS cardnumber,
-p.surname, p.firstname, p.email, p.phone, p.categorycode
+p.surname, p.firstname, p.email, p.phone, p.smsalertnumber, p.categorycode
 FROM borrowers p
 JOIN borrower_message_preferences bmp ON p.borrowernumber = bmp.borrowernumber
 JOIN borrower_message_transport_preferences btp ON bmp.borrower_message_preference_id = btp.borrower_message_preference_id
