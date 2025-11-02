@@ -1,0 +1,34 @@
+---Work of partner, Eric, and Lynn
+
+SELECT 
+    i.biblionumber,
+    i.barcode AS 'Barcode',
+    i.itype AS 'Item Type',
+    cc.lib AS 'Collection',
+    loc.lib AS 'Shelf Location',
+    i.itemlost_on AS 'Lost Status Date',
+    p.date_paid AS 'Date Paid',
+    CONCAT('<a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=', i.biblionumber, '">', b.title, IFNULL(CONCAT(': ', b.subtitle), ''), '</a>' ) AS Title,
+    b.author AS 'Author'
+
+FROM items i
+LEFT JOIN biblio b USING (biblionumber)
+LEFT JOIN authorised_values cc ON i.ccode = cc.authorised_value AND cc.category = 'ccode'
+LEFT JOIN authorised_values loc ON i.location = loc.authorised_value AND loc.category = 'loc'
+
+-- Only LOST charges that have been paid 
+LEFT JOIN accountlines af
+    ON af.itemnumber = i.itemnumber
+    AND af.debit_type_code = 'LOST'
+    AND af.amountoutstanding = 0
+
+-- Date Paid
+LEFT JOIN (
+  SELECT o.debit_id, MAX(o.created_on) AS date_paid
+  FROM account_offsets o
+  JOIN accountlines c ON c.accountlines_id=o.credit_id AND c.credit_type_code='PAYMENT'
+  GROUP BY o.debit_id
+) p ON p.debit_id=af.accountlines_id
+
+WHERE i.itemlost = 3
+ORDER BY cc.lib, b.author
