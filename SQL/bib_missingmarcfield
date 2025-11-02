@@ -1,0 +1,6 @@
+SELECT CONCAT('<a href="/cgi-bin/koha/catalogue/moredetail.pl?biblionumber=',b.biblionumber,'">', b.biblionumber, '</a>') AS biblionumber,
+b.title
+FROM biblio b
+LEFT JOIN biblio_metadata bm ON bm.biblionumber = b.biblionumber
+WHERE bm.metadata NOT LIKE '%<datafield tag="6%'
+ORDER BY b.title
