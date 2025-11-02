@@ -1,0 +1,8 @@
+SELECT b.title, i.itemcallnumber, i.itype, i.datelastborrowed,
+CONCAT('<a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=', i.itemnumber, '">', i.barcode, '</a>') AS barcode 
+FROM biblio b
+JOIN items i ON i.biblionumber = b.biblionumber
+WHERE  
+  i.itype = <<Item type|itemtypes>>  
+  AND DATE(i.datelastborrowed) < <<Prior to|date>>  
+ORDER BY i.itype, i.itemcallnumber
