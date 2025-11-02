@@ -1,0 +1,19 @@
+SELECT
+CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', p.borrowernumber, '">', p.cardnumber, '</a>') AS cardnumber,
+p.surname, p.firstname, p.email, p.phone, p.categorycode
+FROM borrowers p
+JOIN borrower_message_preferences bmp ON p.borrowernumber = bmp.borrowernumber
+JOIN borrower_message_transport_preferences btp ON bmp.borrower_message_preference_id = btp.borrower_message_preference_id
+WHERE
+  (
+    (btp.message_transport_type = 'email' AND (p.email IS NULL or p.email = ''))
+    OR
+    (btp.message_transport_type = 'phone' AND (p.phone IS NULL or p.phone = ''))
+    OR
+    (btp.message_transport_type = 'sms' AND (p.smsalertnumber IS NULL or p.smsalertnumber = ''))
+  )
+GROUP BY
+    p.borrowernumber, p.surname, p.firstname, p.cardnumber, p.email, p.phone, p.smsalertnumber
+    
+ORDER BY 
+    p.surname, p.firstname
