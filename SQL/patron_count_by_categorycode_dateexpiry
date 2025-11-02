@@ -1,0 +1,7 @@
+SELECT 
+  categorycode AS 'Patron Category',
+  COUNT(*) AS 'Patron Count'
+FROM borrowers
+WHERE dateexpiry > <<Enter date|date>>
+GROUP BY categorycode
+ORDER BY categorycode
