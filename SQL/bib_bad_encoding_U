@@ -1,0 +1,9 @@
+SELECT 
+  bm.biblionumber,
+  b.title,
+  LENGTH(bm.metadata) AS metadata_length,
+  bm.metadata
+FROM biblio_metadata bm
+LEFT JOIN biblio b USING (biblionumber)
+WHERE bm.metadata REGEXP 'U\\+[0-9A-F]{4}'
+ORDER BY bm.biblionumber;
