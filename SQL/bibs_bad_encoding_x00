@@ -1,0 +1,9 @@
+SELECT 
+  biblionumber,
+  title,
+  LENGTH(metadata) AS metadata_length,
+  metadata
+FROM biblio_metadata bm
+LEFT JOIN biblio b USING (biblionumber)
+WHERE metadata REGEXP '[\x00-.*'
+ORDER BY biblionumber;
