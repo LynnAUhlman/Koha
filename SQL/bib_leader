@@ -1,0 +1,13 @@
+SELECT 
+  b.biblionumber,
+  b.title,
+  ldr.ldr_status
+FROM (
+  SELECT 
+    SUBSTRING(ExtractValue(metadata, '//leader'), 6, 1) AS ldr_status, 
+    biblionumber
+  FROM biblio_metadata
+) AS ldr
+LEFT JOIN biblio b USING (biblionumber)
+WHERE ldr.ldr_status = 'd'
+ORDER BY b.biblionumber
