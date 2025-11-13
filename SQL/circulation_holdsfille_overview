@@ -1,0 +1,52 @@
+SELECT 
+  branch,
+  SUM(ct_count) AS total_stats,
+  GROUP_CONCAT(CONCAT(kind, ': ', ct_count) ORDER BY kind SEPARATOR ' | ') AS breakdown
+FROM (
+  SELECT 
+      bt.frombranch AS branch,
+      COUNT(*) AS ct_count,
+      'Transit initiated for hold' AS kind
+  FROM branchtransfers bt
+  WHERE bt.reason = 'Reserve'
+    AND bt.datesent >= <<Start date|date>>
+    AND bt.datesent < DATE_ADD(<<End date|date>>, INTERVAL 1 DAY)
+    AND bt.frombranch LIKE <<Limit to branch|branches:all>>
+  GROUP BY bt.frombranch
+
+  UNION ALL
+
+  SELECT 
+      bt.tobranch AS branch,
+      COUNT(*) AS ct_count,
+      'Transit received to hold shelf' AS kind
+  FROM branchtransfers bt
+  WHERE bt.reason = 'Reserve'
+    AND bt.datearrived IS NOT NULL
+    AND bt.datearrived >= <<Start date|date>>
+    AND bt.datearrived < DATE_ADD(<<End date|date>>, INTERVAL 1 DAY)
+    AND bt.tobranch LIKE <<Limit to branch|branches:all>>
+  GROUP BY bt.tobranch
+
+  UNION ALL
+
+  SELECT 
+      r.branchcode AS branch,
+      COUNT(*) AS ct_count,
+      'Hold to waiting (no transit)' AS kind
+  FROM reserves r
+  LEFT JOIN branchtransfers bt
+         ON bt.itemnumber = r.itemnumber
+        AND bt.reason = 'Reserve'
+        AND bt.datesent BETWEEN DATE_SUB(r.waitingdate, INTERVAL 2 DAY)
+                            AND DATE_ADD(r.waitingdate, INTERVAL 2 DAY)
+  WHERE r.found = 'W'
+    AND r.waitingdate IS NOT NULL
+    AND r.waitingdate >= <<Start date|date>>
+    AND r.waitingdate < DATE_ADD(<<End date|date>>, INTERVAL 1 DAY)
+    AND bt.branchtransfer_id IS NULL
+    AND r.branchcode LIKE <<Limit to branch|branches:all>>
+  GROUP BY r.branchcode
+) x
+GROUP BY branch
+ORDER BY total_stats DESC, branch
