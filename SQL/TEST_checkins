@@ -1,0 +1,9 @@
+SELECT
+  DATE(datetime) AS checkin_date,
+  COUNT(*) AS total_checkins
+FROM statistics
+WHERE
+  type = 'return'
+  AND DATE(datetime) BETWEEN <<Between|date>> AND <<and|date>>
+GROUP BY DATE(datetime)
+ORDER BY checkin_date
