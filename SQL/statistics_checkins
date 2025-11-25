@@ -1,0 +1,17 @@
+---added i.permanent_location for those libraries that use a location like 'CART' to indicate things have been recently returned
+---wanted to see what locations had returns
+---great for assessing volunteer or shelving staff times needed by workload
+
+SELECT 
+  i.permanent_location AS shelving_location,
+  DATE(s.datetime) AS checkin_date,
+  HOUR(s.datetime) AS checkin_hour,
+  COUNT(*) AS checkins_per_hour
+FROM statistics s
+LEFT JOIN items i ON i.itemnumber = s.itemnumber
+WHERE 
+  s.type = 'return'
+  AND s.datetime BETWEEN CONCAT(<<Between|date>>, ' 00:00:00')
+    AND CONCAT(<<and|date>>, ' 23:59:59')
+GROUP BY shelving_location, checkin_date, checkin_hour
+ORDER BY shelving_location, checkin_date, checkin_hour
