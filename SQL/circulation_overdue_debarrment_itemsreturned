@@ -1,0 +1,14 @@
+---updated from report by Sara B.
+---added issues select statement and updated cardnumber to link to account
+
+SELECT CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', p.borrowernumber, '">', p.cardnumber, '</a>') AS cardnumber, p.surname, p.firstname, d.type,p.debarred, p.debarredcomment 
+FROM borrowers p
+left join borrower_debarments d using (borrowernumber)
+WHERE p.debarred is not NULL and d.type = 'OVERDUES'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM issues i
+    WHERE i.borrowernumber = p.borrowernumber
+      AND i.date_due <CURDATE() 
+  )
+ORDER BY surname ASC, firstname ASC
