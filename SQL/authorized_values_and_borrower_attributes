@@ -1,0 +1,14 @@
+---double check that the borrower_attributes code value is correct as it may differ from what is found in authorised_values category
+
+SELECT
+  p.cardnumber AS barcode,
+  pa.attribute AS jurisdiction_code
+FROM borrowers p
+LEFT JOIN borrower_attributes pa
+  ON pa.borrowernumber = p.borrowernumber
+  AND pa.code = 'JURISDICT' 
+LEFT JOIN authorised_values av
+  ON av.category = 'JURISDICTION'
+  AND av.authorised_value = pa.attribute
+WHERE p.cardnumber IN <<Cardnumbers|list>>
+ORDER BY p.cardnumber;
