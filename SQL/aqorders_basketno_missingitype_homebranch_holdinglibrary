@@ -1,0 +1,18 @@
+ssh:
+SELECT itemnumber FROM items WHERE itemnumber IN (SELECT itemnumber from aqorders_items JOIN aqorders ON aqorders.ordernumber = aqorders_items.ordernumber  WHERE aqorders.basketno = 219) AND (homebranch IS NULL OR homebranch = '' OR holdingbranch IS NULL OR holdingbranch = '' OR itype IS NULL OR itype = '');
+
+Koha:
+SELECT itemnumber 
+FROM items 
+WHERE itemnumber IN (
+  SELECT itemnumber 
+  FROM aqorders_items 
+  JOIN aqorders ON aqorders.ordernumber = aqorders_items.ordernumber
+  WHERE aqorders.basketno = 219) 
+AND (
+    homebranch IS NULL 
+    OR homebranch = '' 
+    OR holdingbranch IS NULL 
+    OR holdingbranch = '' 
+    OR itype IS NULL OR itype = ''
+);
