@@ -1,0 +1,13 @@
+SELECT
+  b.title,
+  b.author,
+  COUNT(*) AS 'Total Circs'
+FROM statistics st
+JOIN items i ON st.itemnumber = i.itemnumber
+JOIN biblio b ON i.biblionumber = b.biblionumber
+WHERE st.type IN ('issue', 'renews')
+  AND DATE(st.datetime) BETWEEN <<Start date (YYYY-MM-DD)|date>> AND <<End date (YYYY-MM-DD)|date>>
+  AND i.homebranch LIKE <<Item home branch (items.homebranch)|branches:all>>
+GROUP BY b.biblionumber, b.title, b.author
+HAVING COUNT(*) > 0
+ORDER BY COUNT(*) DESC, b.title
