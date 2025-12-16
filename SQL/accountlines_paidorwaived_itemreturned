@@ -1,0 +1,30 @@
+SELECT
+  a.borrowernumber,
+  CONCAT('<a href="/cgi-bin/koha/members/accountline-details.pl?accountlines_id=', a.accountlines_id, '" target="_blank">', a.accountlines_id, '</a>') AS transaction,
+  a.itemnumber,
+  i.barcode,
+  b.title,
+  i.homebranch,
+  i.itemcallnumber,
+  a.date AS "date charged",
+  a.amount,
+  a.branchcode AS "charging branch"
+  
+FROM accountlines a
+JOIN items i ON i.itemnumber = a.itemnumber
+JOIN biblio b ON b.biblionumber = i.biblionumber
+WHERE a.credit_type_code IN ('PAYMENT','FORGIVEN','WRITEOFF','DISCOUNT')
+  AND a.date IS NOT NULL
+  AND a.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+  AND i.homebranch = <<Select owning library branch|branches>>
+  AND NOT EXISTS (SELECT 1 FROM issues x WHERE x.itemnumber = i.itemnumber)
+  AND EXISTS (
+    SELECT 1
+    FROM account_offsets ao
+    JOIN accountlines d ON d.accountlines_id = ao.debit_id
+    WHERE ao.credit_id = a.accountlines_id
+      AND ao.type = 'APPLY'
+      AND d.itemnumber = i.itemnumber
+      AND d.debit_type_code IS NOT NULL
+  )
+ORDER BY a.date
