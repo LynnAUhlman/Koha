@@ -1,0 +1,14 @@
+/*patron has a valid email, transport type for advance notice does not have email or sms with a valid smsalertnumber*\
+/*can easily be updated to other message preference types and transport types*\
+
+SELECT borrowernumber 
+FROM borrowers b 
+WHERE b.email REGEXP '^.+@.+\\..+$' 
+AND NOT EXISTS (
+    SELECT 1 
+    FROM borrower_message_preferences bmp 
+    JOIN borrower_message_transport_preferences bmpt ON bmpt.borrower_message_preference_id=bmp.borrower_message_preference_id 
+    WHERE bmp.borrowernumber=b.borrowernumber 
+      AND bmp.message_attribute_id=2 
+      AND (bmpt.message_transport_type='email' 
+      OR (bmpt.message_transport_type='sms' AND b.smsalertnumber IS NOT NULL AND b.smsalertnumber<>'')))
