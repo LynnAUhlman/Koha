@@ -1,0 +1,71 @@
+SELECT '', '', '', '', '' 
+
+UNION ALL 
+
+SELECT 'TITLES', '', '', '', 'TOTAL' 
+
+UNION ALL 
+
+SELECT 'Titles in Collection' AS type,'', '', '', COUNT(DISTINCT b.biblionumber) AS total 
+FROM biblio b  
+
+UNION ALL 
+
+SELECT 'Titles Added' AS type, '', '', '',  COUNT(*) AS total 
+FROM biblio 
+WHERE datecreated >= <<Start date|date>> AND datecreated < DATE_ADD(<<End date|date>>, INTERVAL 1 DAY) 
+
+UNION ALL 
+
+SELECT 'Titles Deleted' AS type, '' AS category, '', '', COUNT(*) AS total 
+FROM deletedbiblio 
+WHERE timestamp >= <<Start date|date>> AND timestamp < DATE_ADD(<<End date|date>>, INTERVAL 1 DAY) 
+
+UNION ALL 
+
+SELECT '', '', '', '', '' 
+
+UNION ALL
+
+SELECT 'REGISTERED BORROWERS BY CATEGORY', '', '', '', 'TOTAL' 
+
+UNION ALL 
+
+SELECT  
+  CASE WHEN categorycode IS NULL THEN 'TOTAL' ELSE categorycode END, 
+  '', '', '',  
+  COUNT(*) AS total 
+FROM borrowers 
+WHERE dateexpiry IS NULL OR dateexpiry >= CURDATE() 
+GROUP BY categorycode WITH ROLLUP 
+
+UNION ALL 
+
+SELECT '', '', '', '', '' 
+
+UNION ALL 
+
+SELECT 'CIRCULATION BY ITEM TYPE', 'issues', 'renews', 'localuse', 'TOTAL' 
+
+UNION ALL 
+
+SELECT 
+  COALESCE(i.itype, di.itype, '(no itype)') AS type,
+  SUM(CASE WHEN st.type = 'issue' THEN 1 ELSE 0 END) AS issues, SUM(CASE WHEN st.type = 'renew' THEN 1 ELSE 0 END) AS renew, SUM(CASE WHEN st.type = 'localuse' THEN 1 ELSE 0 END) AS localuse, 
+  COUNT(*) AS total
+FROM statistics st
+LEFT JOIN items i ON i.itemnumber = st.itemnumber
+LEFT JOIN deleteditems di ON di.itemnumber = st.itemnumber
+WHERE st.datetime >= <<Start date|date>>
+  AND st.datetime < DATE_ADD(<<End date|date>>, INTERVAL 1 DAY)
+  AND st.type IN ('issue','renew','localuse')
+GROUP BY COALESCE(i.itype, di.itype)
+UNION ALL
+SELECT 
+  'TOTAL' AS type,
+  '', '', '',  
+  COUNT(*) AS total
+FROM statistics st
+WHERE st.datetime >= <<Start date|date>>
+  AND st.datetime < DATE_ADD(<<End date|date>>, INTERVAL 1 DAY)
+  AND st.type IN ('issue','renew','localuse')
