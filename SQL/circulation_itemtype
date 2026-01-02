@@ -1,0 +1,21 @@
+SELECT
+    COALESCE(i.itype, '(no itype)') AS itype,
+    COALESCE(i.location, '(no location)') AS shelving_location,
+    COUNT(i.itemnumber) AS item_count,
+    COUNT(DISTINCT i.biblionumber) AS title_count
+FROM items i
+GROUP BY i.itype, i.location 
+
+UNION ALL
+
+SELECT
+    'TOTAL' AS itype,
+    '' AS shelving_location,
+    COUNT(i.itemnumber) AS item_count,
+    COUNT(DISTINCT i.biblionumber) AS title_count
+FROM items i
+
+ORDER BY 
+    CASE WHEN itype = 'TOTAL' THEN 1 ELSE 0 END,
+    itype,
+    shelving_location
