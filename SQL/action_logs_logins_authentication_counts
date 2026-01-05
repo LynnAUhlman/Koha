@@ -1,0 +1,9 @@
+SELECT p.categorycode, COUNT(*) AS login_count
+FROM action_logs al
+LEFT JOIN borrowers p ON p.borrowernumber = al.object
+WHERE al.action='SUCCESS'
+  AND al.info NOT LIKE '%sip_%'
+  AND al.interface = 'opac'
+  AND DATE(al.timestamp) >= <<Dates between|date>>
+  AND DATE(al.timestamp) < DATE_ADD(<<and|date>>, INTERVAL 1 DAY)
+GROUP BY p.categorycode WITH ROLLUP
