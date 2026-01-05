@@ -1,0 +1,9 @@
+SELECT al.action_id, al.timestamp, al.object, al.user, p.categorycode, al.info, al.interface
+FROM action_logs al
+LEFT JOIN borrowers p ON p.borrowernumber = al.user
+WHERE al.action='SUCCESS'
+  AND al.info NOT LIKE '%sip_%'
+  AND al.interface = 'opac'
+  AND DATE(al.timestamp) >= <<Dates between|date>>
+  AND DATE(al.timestamp) < DATE_ADD(<<and|date>>, INTERVAL 1 DAY)
+ORDER BY timestamp DESC
