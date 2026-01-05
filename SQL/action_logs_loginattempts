@@ -1,0 +1,13 @@
+Shows failed attempts. Koha only logs failed attempts and then resets to 0 when they've successfully logged into their account.
+---does not find valid logins---
+
+SELECT p.categorycode, COUNT(*) AS login_count
+FROM action_logs al
+LEFT JOIN borrowers p ON p.borrowernumber = al.object
+WHERE al.module = 'MEMBERS'
+  AND al.action LIKE 'MODIF%'
+  AND al.info LIKE '%login_attempts%'
+  AND al.user = '30551'
+  AND DATE(al.timestamp) >= <<Dates between|date>>
+  AND DATE(al.timestamp) < DATE_ADD(<<and|date>>, INTERVAL 1 DAY)
+GROUP BY p.categorycode WITH ROLLUP
