@@ -1,0 +1,13 @@
+SELECT bt.datesent, i.barcode, i.ccode, bt.frombranch, bt.tobranch, al.user AS staff_borrowernumber, bt.reason 
+FROM branchtransfers bt
+LEFT JOIN action_logs al
+  ON al.object = bt.branchtransfer_id
+  AND al.module = 'CIRCULATION'
+  AND al.action = 'TRANSFER'
+LEFT JOIN borrowers b ON b.borrowernumber = al.user
+LEFT JOIN items i ON i.itemnumber = bt.itemnumber
+WHERE bt.reason = 'Manual'
+  AND bt.datecancelled IS NULL
+  AND DATE(bt.datesent) >= <<Dates between|date>>
+  AND DATE(bt.datesent) < DATE_ADD(<<And|date>>, INTERVAL 1 DAY)
+ORDER BY bt.datesent
