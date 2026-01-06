@@ -1,0 +1,40 @@
+SELECT 
+  'OVERDUE TODAY' AS section,
+  b.branchcode,
+  CONCAT(b.surname, ', ', b.firstname) AS patron_name,
+  b.cardnumber,
+  b.phone,
+  b.email,
+  b.smsalertnumber,
+  bi.title AS item_title,
+  i.date_due AS event_date
+FROM issues i
+JOIN borrowers b ON b.borrowernumber = i.borrowernumber
+JOIN items it ON it.itemnumber = i.itemnumber
+JOIN biblio bi ON bi.biblionumber = it.biblionumber
+WHERE DATE(i.date_due) = CURDATE()
+  AND i.date_due < NOW()
+  AND (b.email IS NULL OR b.email = '')
+  AND (b.smsalertnumber IS NULL OR b.smsalertnumber = '')
+
+UNION ALL
+
+SELECT 
+  'HOLD FILLED TODAY' AS section,
+  b.branchcode,
+  CONCAT(b.surname, ', ', b.firstname) AS patron_name,
+  b.cardnumber,
+  b.phone,
+  b.email,
+  b.smsalertnumber,
+  bi.title AS item_title,
+  r.waitingdate AS event_date
+FROM reserves r
+JOIN borrowers b ON b.borrowernumber = r.borrowernumber
+JOIN items it ON it.itemnumber = r.itemnumber
+JOIN biblio bi ON bi.biblionumber = it.biblionumber
+WHERE r.waitingdate = CURDATE()
+  AND (b.email IS NULL OR b.email = '')
+  AND (b.smsalertnumber IS NULL OR b.smsalertnumber = '')
+
+ORDER BY branchcode, patron_name, section
