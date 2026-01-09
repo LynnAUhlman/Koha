@@ -1,0 +1,20 @@
+SELECT
+  b.borrowernumber,
+  b.cardnumber,
+  b.email AS current_email,
+  a.timestamp AS updated_on,
+  JSON_UNQUOTE(COALESCE(JSON_EXTRACT(a.info,'$.email.before'), JSON_EXTRACT(a.info,'$.changes.email.before'))) AS before_email,
+  JSON_UNQUOTE(COALESCE(JSON_EXTRACT(a.info,'$.email.after'), JSON_EXTRACT(a.info,'$.changes.email.after')))  AS after_email,
+  a.info
+FROM borrowers b
+JOIN action_logs a ON a.object = b.borrowernumber
+WHERE a.info LIKE '%"email"%'
+  AND a.timestamp >= <<Email address updated between|date>>
+  AND a.timestamp <  DATE_ADD(<<and|date>>, INTERVAL 1 DAY)
+  AND b.branchcode LIKE <<Library|branches:all>>
+  AND (
+        JSON_UNQUOTE(COALESCE(JSON_EXTRACT(a.info,'$.email.before'), JSON_EXTRACT(a.info,'$.changes.email.before'))) = ''
+        OR JSON_UNQUOTE(COALESCE(JSON_EXTRACT(a.info,'$.email.before'), JSON_EXTRACT(a.info,'$.changes.email.before')))
+        <> JSON_UNQUOTE(COALESCE(JSON_EXTRACT(a.info,'$.email.after'), JSON_EXTRACT(a.info,'$.changes.email.after')))
+      )
+ORDER BY a.timestamp DESC
