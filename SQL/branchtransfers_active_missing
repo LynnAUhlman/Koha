@@ -1,0 +1,60 @@
+SELECT
+  i.barcode,
+  i.itemnumber,
+  i.biblionumber,
+  i.homebranch,
+  i.holdingbranch,
+  CASE
+    WHEN i.itemlost = 4 THEN 'Lost (code 4)'
+    WHEN i.itemlost IS NULL OR i.itemlost = 0 THEN 'Not marked lost/missing'
+    ELSE CONCAT('Lost status ', i.itemlost)
+  END AS lost_status,
+  bt.datesent AS transit_date_sent,
+  bt.frombranch AS transit_from,
+  bt.tobranch AS transit_to,
+  CASE
+    WHEN bt.itemnumber IS NOT NULL THEN 'In transit'
+    ELSE 'Not in transit'
+  END AS transit_status,
+  CASE
+    WHEN (SELECT COUNT(*) FROM items i2 WHERE i2.biblionumber = i.biblionumber) = 1
+       THEN 'YES'
+    ELSE 'NO'
+  END AS LastCopy,
+  COALESCE(
+    (
+      SELECT COUNT(*)
+      FROM reserves r
+      WHERE r.cancellationdate IS NULL
+        AND (r.found IS NULL OR r.found IN ('W','T'))
+        AND (
+              r.itemnumber = i.itemnumber
+              OR (r.itemnumber IS NULL AND r.biblionumber = i.biblionumber)
+        )
+    ),
+    0
+  ) AS hold_count
+FROM items i
+LEFT JOIN (
+  SELECT itemnumber, MAX(datesent) AS last_datesent
+  FROM branchtransfers
+  WHERE datearrived IS NULL
+  GROUP BY itemnumber
+) bt_last ON bt_last.itemnumber = i.itemnumber
+LEFT JOIN branchtransfers bt
+  ON bt.itemnumber = bt_last.itemnumber
+  AND bt.datesent = bt_last.last_datesent
+  
+WHERE i.itemlost = 4
+  AND bt.datesent IS NOT NULL
+  AND bt.datearrived IS NULL
+  AND (
+    SELECT COUNT(*)
+    FROM reserves r
+    WHERE r.cancellationdate IS NULL
+      AND (r.found IS NULL OR r.found IN ('W','T'))
+      AND (
+        r.itemnumber = i.itemnumber
+        OR (r.itemnumber IS NULL AND r.biblionumber = i.biblionumber)
+        )
+  ) > 0
