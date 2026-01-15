@@ -1,0 +1,13 @@
+SELECT
+  i.itemnumber, i.barcode, i.itemlost AS lost_code, av.lib AS lost_description, i.itemlost_on, i.homebranch, i.holdingbranch,
+  CASE
+        WHEN iss.issue_id IS NOT NULL THEN 'Checked out'
+        ELSE 'Not checked out'
+    END AS checkout_status
+FROM items i
+LEFT JOIN issues iss ON iss.itemnumber = i.itemnumber
+LEFT JOIN authorised_values av ON av.category = 'LOST'
+      AND av.authorised_value = i.itemlost
+WHERE i.itemlost > 0
+  AND i.itemlost_on IS NOT NULL
+  AND DATE(i.itemlost_on) < '2019-01-01'
