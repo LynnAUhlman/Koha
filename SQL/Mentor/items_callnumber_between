@@ -1,0 +1,10 @@
+--- partner report that limits by branch, itype, ccode, and callnumber. The call number is an optional limit using yes|no.
+
+select 
+  b.title, b.author, i.itemcallnumber, 
+  CONCAT('<a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=',i.itemnumber,'" target="_blank">',i.barcode, '</a>') AS barcode,
+  i.datelastborrowed, i.dateaccessioned, i.itemlost, i.issues as 'Total checkouts'
+from items i
+left join biblio b using (biblionumber)
+where i.homebranch=<<Branch|branches>> and i.itype=<<Item type|itemtypes>> and i.ccode=<<Collection code|ccode>> AND IF(<<Limit by call number|YES_NO>>,itemcallnumber BETWEEN <<Call number between>> AND <<and>>,1)
+order by i.itemcallnumber
