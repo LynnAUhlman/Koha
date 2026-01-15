@@ -1,0 +1,40 @@
+--- tweak for report #22 Overdues With Holds Waiting to exclude items that have specific item-level holds and no bib-level holds and vice-versa
+---additionally notes when there is a bib-level hold, item-level hold, or both to help with workflows
+
+SELECT
+  CONCAT('<a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=', p.borrowernumber, '" target="_blank">', p.cardnumber, '</a>') AS cardnumber,  p.surname, p.firstname, p.phone, p.address, p.city, p.zipcode, c.date_due,
+ (TO_DAYS(CURDATE())-TO_DAYS(c.date_due)) AS days_overdue,
+ i.itype, b.title, b.author, i.itemcallnumber,
+ CONCAT('<a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=',i.itemnumber,'" target="_blank">',i.barcode, '</a>') AS barcode,
+    CASE
+    WHEN EXISTS (
+        SELECT 1 FROM reserves r
+        WHERE r.itemnumber = i.itemnumber
+    )
+    AND EXISTS (
+        SELECT 1 FROM reserves r
+        WHERE r.biblionumber = b.biblionumber
+          AND r.itemnumber IS NULL
+    )
+        THEN 'Item-level & Bib-level'
+    WHEN EXISTS (
+        SELECT 1 FROM reserves r
+        WHERE r.itemnumber = i.itemnumber
+    )
+        THEN 'Item-level'
+    WHEN EXISTS (
+        SELECT 1 FROM reserves r
+        WHERE r.biblionumber = b.biblionumber
+          AND r.itemnumber IS NULL
+    )
+        THEN 'Bib-level'
+    ELSE 'None'
+END AS hold_type
+FROM borrowers p
+JOIN issues c USING (borrowernumber)
+JOIN items i USING (itemnumber)
+JOIN biblio b ON (i.biblionumber=b.biblionumber)
+WHERE p.branchcode = <<Branch Code|branches>>
+  AND c.date_due < CURDATE()
+HAVING hold_type <> 'None'
+ORDER BY p.surname, c.date_due
